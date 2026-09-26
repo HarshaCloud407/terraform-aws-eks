@@ -61,6 +61,15 @@ module "eks_node_sg" {
     common_tags = var.common_tags
 }
 
+resource "aws_security_group_rule" "eks_node_nodeport_elb" {
+  type              = "ingress"
+  from_port         = 30000
+  to_port           = 32767
+  protocol          = "tcp"
+  security_group_id = module.eks_node_sg.sg_id
+  cidr_blocks       = ["10.0.0.0/16"]  # your VPC CIDR, adjust to match
+}
+
 resource "aws_security_group_rule" "eks_control_plane_node" {
   type              = "ingress"
   from_port         = 0
@@ -79,14 +88,14 @@ resource "aws_security_group_rule" "eks_node_eks_control_plane" {
   security_group_id = module.eks_node_sg.sg_id
 }
 
-# resource "aws_security_group_rule" "node_alb_ingress" {
-#   type              = "ingress"
-#   from_port         = 30000
-#   to_port           = 32767
-#   protocol          = "tcp"
-#   source_security_group_id       = module.alb_ingress_sg.sg_id
-#   security_group_id = module.eks_node_sg.sg_id
-# }
+resource "aws_security_group_rule" "node_alb_ingress" {
+  type              = "ingress"
+  from_port         = 30000
+  to_port           = 32767
+  protocol          = "tcp"
+  source_security_group_id       = module.alb_ingress_sg.sg_id
+   security_group_id = module.eks_node_sg.sg_id
+ }
 
 resource "aws_security_group_rule" "node_vpc" {
   type              = "ingress"
